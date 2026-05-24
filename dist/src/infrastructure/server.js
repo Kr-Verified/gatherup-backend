@@ -1,4 +1,7 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const hono_1 = require("hono");
 const cors_1 = require("hono/cors");
@@ -12,6 +15,7 @@ const ScheduleUseCase_1 = require("../usecase/schedule/ScheduleUseCase");
 const AuthController_1 = require("../interface/controllers/AuthController");
 const RoomController_1 = require("../interface/controllers/RoomController");
 const ScheduleController_1 = require("../interface/controllers/ScheduleController");
+const prisma_1 = __importDefault(require("./db/prisma"));
 const app = new hono_1.Hono();
 const allowedOrigins = [
     'http://localhost:3000',
@@ -49,6 +53,19 @@ const scheduleUseCase = new ScheduleUseCase_1.ScheduleUseCase(scheduleRepo);
 const authController = new AuthController_1.AuthController(authUseCase);
 const roomController = new RoomController_1.RoomController(roomUseCase);
 const scheduleController = new ScheduleController_1.ScheduleController(scheduleUseCase);
+app.get('/api/health', (c) => c.json({ ok: true, time: new Date().toISOString() }));
+app.get('/api/health/db', async (c) => {
+    try {
+        const timeout = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Database health check timed out.')), 5_000);
+        });
+        await Promise.race([prisma_1.default.$queryRaw `SELECT 1`, timeout]);
+        return c.json({ ok: true, database: 'connected' });
+    }
+    catch (error) {
+        return c.json({ ok: false, database: 'failed', error: error.message }, 503);
+    }
+});
 // Auth routes
 app.post('/api/auth/register', authController.register);
 app.post('/api/auth/login', authController.login);

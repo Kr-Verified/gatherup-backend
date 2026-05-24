@@ -10,6 +10,7 @@ import { ScheduleUseCase } from '../usecase/schedule/ScheduleUseCase';
 import { AuthController } from '../interface/controllers/AuthController';
 import { RoomController } from '../interface/controllers/RoomController';
 import { ScheduleController } from '../interface/controllers/ScheduleController';
+import prisma from './db/prisma';
 
 const app = new Hono();
 const allowedOrigins = [
@@ -56,6 +57,20 @@ const scheduleUseCase = new ScheduleUseCase(scheduleRepo);
 const authController = new AuthController(authUseCase);
 const roomController = new RoomController(roomUseCase);
 const scheduleController = new ScheduleController(scheduleUseCase);
+
+app.get('/api/health', (c) => c.json({ ok: true, time: new Date().toISOString() }));
+
+app.get('/api/health/db', async (c) => {
+  try {
+    const timeout = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Database health check timed out.')), 5_000);
+    });
+    await Promise.race([prisma.$queryRaw`SELECT 1`, timeout]);
+    return c.json({ ok: true, database: 'connected' });
+  } catch (error: any) {
+    return c.json({ ok: false, database: 'failed', error: error.message }, 503);
+  }
+});
 
 // Auth routes
 app.post('/api/auth/register', authController.register);
