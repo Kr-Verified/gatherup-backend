@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  loginId   String?  @unique @map("login_id")
+  password  String?
+  provider  String   @default("local")
+  email     String?  @unique
+  nickname  String
+  age       Int?
+  gender    String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  rooms        RoomMember[]
+  schedules    Schedule[]
+  createdRooms Room[]
+
+  @@map("users")
+}
+
+model Room {
+  id         String   @id @default(uuid())
+  name       String
+  inviteCode String   @unique @map("invite_code")
+  password   String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  creatorId  String   @map("creator_id")
+
+  creator User         @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  members RoomMember[]
+
+  @@map("rooms")
+}
+
+model RoomMember {
+  id       String   @id @default(uuid())
+  roomId   String   @map("room_id")
+  userId   String   @map("user_id")
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+  @@map("room_members")
+}
+
+model Schedule {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  startDate DateTime @map("start_date")
+  endDate   DateTime @map("end_date")
+  title     String
+  color     String?  @default("#7c3aed")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("schedules")
+}
