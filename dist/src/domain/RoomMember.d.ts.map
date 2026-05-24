@@ -1,0 +1,1 @@
+{"version":3,"file":"RoomMember.d.ts","sourceRoot":"","sources":["../../../src/domain/RoomMember.ts"],"names":[],"mappings":"AAAA,qBAAa,UAAU;IAEZ,EAAE,EAAE,MAAM;IACV,MAAM,EAAE,MAAM;IACd,MAAM,EAAE,MAAM;IACd,QAAQ,EAAE,IAAI;gBAHd,EAAE,EAAE,MAAM,EACV,MAAM,EAAE,MAAM,EACd,MAAM,EAAE,MAAM,EACd,QAAQ,EAAE,IAAI;CAExB"}
