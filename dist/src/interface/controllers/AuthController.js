@@ -8,6 +8,15 @@ class AuthController {
     constructor(authUseCase) {
         this.authUseCase = authUseCase;
     }
+    withTimeout(promise, ms, message) {
+        return new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => reject(new Error(message)), ms);
+            promise
+                .then(resolve)
+                .catch(reject)
+                .finally(() => clearTimeout(timeout));
+        });
+    }
     authResponse(user) {
         return {
             user: (0, auth_1.publicUser)(user),
@@ -64,6 +73,7 @@ class AuthController {
                 return c.json({ error: '잘못된 요청입니다.' }, 400);
             const googleRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
                 headers: { Authorization: `Bearer ${accessToken}` },
+                signal: AbortSignal.timeout(5_000),
             });
             if (!googleRes.ok) {
                 return c.json({ error: '구글 인증에 실패했습니다.' }, 401);
@@ -72,11 +82,12 @@ class AuthController {
             if (!userInfo.email) {
                 return c.json({ error: '구글 계정 이메일을 확인할 수 없습니다.' }, 401);
             }
-            const user = await this.authUseCase.googleLogin(userInfo.email, userInfo.name || '구글유저');
+            const user = await this.withTimeout(this.authUseCase.googleLogin(userInfo.email, userInfo.name || '구글유저'), 7_000, '데이터베이스 연결 시간이 초과되었습니다.');
             return c.json(this.authResponse(user));
         }
         catch (error) {
-            return c.json({ error: error.message }, 500);
+            const status = error.message?.includes('초과') || error.name === 'TimeoutError' ? 504 : 500;
+            return c.json({ error: error.message }, status);
         }
     };
     deleteAccount = async (c) => {

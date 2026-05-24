@@ -3,6 +3,7 @@ import { AuthUseCase } from '../../usecase/auth/AuthUseCase';
 export declare class AuthController {
     private authUseCase;
     constructor(authUseCase: AuthUseCase);
+    private withTimeout;
     private authResponse;
     register: (c: Context) => Promise<(Response & import("hono").TypedResponse<{
         user: {
@@ -61,7 +62,7 @@ export declare class AuthController {
         error: string;
     }, 401, "json">) | (Response & import("hono").TypedResponse<{
         error: any;
-    }, 500, "json">)>;
+    }, 500 | 504, "json">)>;
     deleteAccount: (c: Context) => Promise<(Response & import("hono").TypedResponse<{
         error: string;
     }, 401, "json">) | (Response & import("hono").TypedResponse<{
