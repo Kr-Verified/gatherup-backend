@@ -90,7 +90,7 @@ export class AuthController {
       const googleRes = await this.fetchWithTimeout(
         'https://www.googleapis.com/oauth2/v3/userinfo',
         { headers: { Authorization: `Bearer ${accessToken}` } },
-        5_000
+        3_000
       );
       mark('google');
       if (!googleRes.ok) {
@@ -104,7 +104,7 @@ export class AuthController {
 
       const user = await this.withTimeout(
         this.authUseCase.googleLogin(userInfo.email, userInfo.name || '구글유저'),
-        7_000,
+        4_000,
         '데이터베이스 연결 시간이 초과되었습니다.'
       );
       mark('database');

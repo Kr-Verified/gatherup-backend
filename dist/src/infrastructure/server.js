@@ -66,6 +66,31 @@ app.get('/api/health/db', async (c) => {
         return c.json({ ok: false, database: 'failed', error: error.message }, 503);
     }
 });
+app.get('/api/health/google', async (c) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3_000);
+    const startedAt = Date.now();
+    try {
+        const response = await fetch('https://www.googleapis.com/oauth2/v3/certs', {
+            signal: controller.signal,
+        });
+        return c.json({
+            ok: response.ok,
+            status: response.status,
+            durationMs: Date.now() - startedAt,
+        });
+    }
+    catch (error) {
+        return c.json({
+            ok: false,
+            error: error.name === 'AbortError' ? 'Google request timed out.' : error.message,
+            durationMs: Date.now() - startedAt,
+        }, 503);
+    }
+    finally {
+        clearTimeout(timeout);
+    }
+});
 // Auth routes
 app.post('/api/auth/register', authController.register);
 app.post('/api/auth/login', authController.login);
