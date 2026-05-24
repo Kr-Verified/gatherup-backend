@@ -18,10 +18,24 @@ const allowedOrigins = [
     'http://localhost:3001',
     ...(process.env.FRONTEND_ORIGIN || '').split(',').map((origin) => origin.trim()),
 ].filter((origin) => Boolean(origin));
+function resolveCorsOrigin(origin) {
+    if (allowedOrigins.includes(origin))
+        return origin;
+    try {
+        const { hostname, protocol } = new URL(origin);
+        if (protocol === 'https:' && hostname.endsWith('.netlify.app')) {
+            return origin;
+        }
+    }
+    catch {
+        return undefined;
+    }
+    return undefined;
+}
 // Middleware
 app.use('*', (0, logger_1.logger)());
 app.use('*', (0, cors_1.cors)({
-    origin: allowedOrigins,
+    origin: resolveCorsOrigin,
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
 }));

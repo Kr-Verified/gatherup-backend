@@ -18,12 +18,27 @@ const allowedOrigins = [
   ...(process.env.FRONTEND_ORIGIN || '').split(',').map((origin) => origin.trim()),
 ].filter((origin): origin is string => Boolean(origin));
 
+function resolveCorsOrigin(origin: string): string | undefined {
+  if (allowedOrigins.includes(origin)) return origin;
+
+  try {
+    const { hostname, protocol } = new URL(origin);
+    if (protocol === 'https:' && hostname.endsWith('.netlify.app')) {
+      return origin;
+    }
+  } catch {
+    return undefined;
+  }
+
+  return undefined;
+}
+
 // Middleware
 app.use('*', logger());
 app.use(
   '*',
   cors({
-    origin: allowedOrigins,
+    origin: resolveCorsOrigin,
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
   })
