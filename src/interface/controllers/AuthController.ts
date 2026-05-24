@@ -6,6 +6,16 @@ import { getAuthenticatedUserId, publicUser } from '../http/auth';
 export class AuthController {
   constructor(private authUseCase: AuthUseCase) {}
 
+  private async fetchWithTimeout(url: string, init: RequestInit, ms: number): Promise<Response> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), ms);
+    try {
+      return await fetch(url, { ...init, signal: controller.signal });
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
   private withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => reject(new Error(message)), ms);
@@ -67,19 +77,27 @@ export class AuthController {
   };
 
   googleLogin = async (c: Context) => {
+    const startedAt = Date.now();
+    const timings: string[] = [];
+    const mark = (label: string) => timings.push(`${label};dur=${Date.now() - startedAt}`);
+
     try {
       const body = await c.req.json();
+      mark('body');
       const { accessToken } = body;
       if (!accessToken) return c.json({ error: '잘못된 요청입니다.' }, 400);
 
-      const googleRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        signal: AbortSignal.timeout(5_000),
-      });
+      const googleRes = await this.fetchWithTimeout(
+        'https://www.googleapis.com/oauth2/v3/userinfo',
+        { headers: { Authorization: `Bearer ${accessToken}` } },
+        5_000
+      );
+      mark('google');
       if (!googleRes.ok) {
         return c.json({ error: '구글 인증에 실패했습니다.' }, 401);
       }
       const userInfo = await googleRes.json() as { email?: string; name?: string };
+      mark('google-json');
       if (!userInfo.email) {
         return c.json({ error: '구글 계정 이메일을 확인할 수 없습니다.' }, 401);
       }
@@ -89,10 +107,16 @@ export class AuthController {
         7_000,
         '데이터베이스 연결 시간이 초과되었습니다.'
       );
-      return c.json(this.authResponse(user));
+      mark('database');
+      const response = c.json(this.authResponse(user));
+      response.headers.set('Server-Timing', timings.join(', '));
+      return response;
     } catch (error: any) {
       const status = error.message?.includes('초과') || error.name === 'TimeoutError' ? 504 : 500;
-      return c.json({ error: error.message }, status);
+      mark('error');
+      const response = c.json({ error: error.name === 'AbortError' ? '구글 인증 요청 시간이 초과되었습니다.' : error.message }, status);
+      response.headers.set('Server-Timing', timings.join(', '));
+      return response;
     }
   };
 

@@ -3,6 +3,7 @@ import { AuthUseCase } from '../../usecase/auth/AuthUseCase';
 export declare class AuthController {
     private authUseCase;
     constructor(authUseCase: AuthUseCase);
+    private fetchWithTimeout;
     private withTimeout;
     private authResponse;
     register: (c: Context) => Promise<(Response & import("hono").TypedResponse<{
