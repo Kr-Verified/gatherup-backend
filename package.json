@@ -1,6 +1,7 @@
 {
   "name": "gatherup-backend",
   "version": "1.0.0",
+  "main": "dist/src/index.js",
   "scripts": {
     "dev": "tsx watch src/main.ts",
     "build": "prisma generate && tsc",
