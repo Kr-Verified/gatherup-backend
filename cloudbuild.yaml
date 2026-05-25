@@ -1,0 +1,47 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$COMMIT_SHA
+      - .
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$COMMIT_SHA
+      - --region
+      - ${_REGION}
+      - --platform
+      - managed
+      - --allow-unauthenticated
+      - --port
+      - '8080'
+      - --memory
+      - ${_MEMORY}
+      - --cpu
+      - ${_CPU}
+      - --min-instances
+      - ${_MIN_INSTANCES}
+      - --max-instances
+      - ${_MAX_INSTANCES}
+      - --set-env-vars
+      - NODE_ENV=production,FRONTEND_ORIGIN=${_FRONTEND_ORIGIN}
+      - --set-secrets
+      - DATABASE_URL=${_DATABASE_URL_SECRET}:latest,JWT_SECRET=${_JWT_SECRET_SECRET}:latest
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$COMMIT_SHA
+substitutions:
+  _REGION: asia-northeast3
+  _REPOSITORY: gatherup
+  _SERVICE: gatherup-backend
+  _FRONTEND_ORIGIN: https://gatherupweb.netlify.app
+  _DATABASE_URL_SECRET: gatherup-database-url
+  _JWT_SECRET_SECRET: gatherup-jwt-secret
+  _MEMORY: 512Mi
+  _CPU: '1'
+  _MIN_INSTANCES: '1'
+  _MAX_INSTANCES: '10'
