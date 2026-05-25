@@ -180,6 +180,7 @@ app.get('/api/rooms/:id/available-dates', roomController.getAvailableDates);
 // Schedule routes
 app.get('/api/schedules', scheduleController.listSchedules);
 app.post('/api/schedules', scheduleController.createSchedule);
+app.post('/api/schedules/import', scheduleController.importSchedules);
 app.put('/api/schedules/:id', scheduleController.updateSchedule);
 app.delete('/api/schedules/:id', scheduleController.deleteSchedule);
 exports.default = app;

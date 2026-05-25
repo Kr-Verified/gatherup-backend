@@ -42,6 +42,28 @@ export class ScheduleController {
     }
   };
 
+  importSchedules = async (c: Context) => {
+    try {
+      const userId = getAuthenticatedUserId(c);
+      if (!userId) return c.json({ error: '사용자 ID가 필요합니다.' }, 401);
+
+      const body = await c.req.json();
+      const schedules = Array.isArray(body.schedules) ? body.schedules : [];
+      const result = await this.scheduleUseCase.importSchedules(
+        userId,
+        schedules.map((schedule: any) => ({
+          startDate: new Date(schedule.startDate),
+          endDate: new Date(schedule.endDate),
+          title: schedule.title,
+          color: schedule.color,
+        }))
+      );
+      return c.json(result, 201);
+    } catch (error: any) {
+      return c.json({ error: error.message }, 400);
+    }
+  };
+
   updateSchedule = async (c: Context) => {
     try {
       const userId = getAuthenticatedUserId(c);

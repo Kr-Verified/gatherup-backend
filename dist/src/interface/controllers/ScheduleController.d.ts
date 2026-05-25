@@ -29,6 +29,13 @@ export declare class ScheduleController {
     }, 201, "json">) | (Response & import("hono").TypedResponse<{
         error: any;
     }, 400, "json">)>;
+    importSchedules: (c: Context) => Promise<(Response & import("hono").TypedResponse<{
+        error: string;
+    }, 401, "json">) | (Response & import("hono").TypedResponse<{
+        importedCount: number;
+    }, 201, "json">) | (Response & import("hono").TypedResponse<{
+        error: any;
+    }, 400, "json">)>;
     updateSchedule: (c: Context) => Promise<(Response & import("hono").TypedResponse<{
         error: string;
     }, 401, "json">) | (Response & import("hono").TypedResponse<{

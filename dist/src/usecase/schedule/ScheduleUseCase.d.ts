@@ -5,6 +5,14 @@ export declare class ScheduleUseCase {
     constructor(scheduleRepo: ScheduleRepository);
     createSchedule(userId: string, startDate: Date, endDate: Date, title: string, color?: string): Promise<Schedule>;
     getMySchedules(userId: string): Promise<Schedule[]>;
+    importSchedules(userId: string, schedules: Array<{
+        startDate: Date;
+        endDate: Date;
+        title: string;
+        color?: string;
+    }>): Promise<{
+        importedCount: number;
+    }>;
     updateSchedule(id: string, userId: string, data: Partial<{
         startDate: Date;
         endDate: Date;

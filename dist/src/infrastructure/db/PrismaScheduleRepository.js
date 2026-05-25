@@ -13,6 +13,18 @@ class PrismaScheduleRepository {
         });
         return new Schedule_1.Schedule(schedule.id, schedule.userId, schedule.startDate, schedule.endDate, schedule.title, schedule.color, schedule.createdAt);
     }
+    async createMany(userId, schedules) {
+        const result = await prisma_1.default.schedule.createMany({
+            data: schedules.map((schedule) => ({
+                userId,
+                startDate: schedule.startDate,
+                endDate: schedule.endDate,
+                title: schedule.title,
+                color: schedule.color,
+            })),
+        });
+        return result.count;
+    }
     async findById(id) {
         const schedule = await prisma_1.default.schedule.findUnique({ where: { id } });
         if (!schedule)

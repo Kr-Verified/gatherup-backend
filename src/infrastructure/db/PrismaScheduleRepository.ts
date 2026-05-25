@@ -10,6 +10,19 @@ export class PrismaScheduleRepository implements ScheduleRepository {
     return new Schedule(schedule.id, schedule.userId, schedule.startDate, schedule.endDate, schedule.title, schedule.color, schedule.createdAt);
   }
 
+  async createMany(userId: string, schedules: Array<{ startDate: Date; endDate: Date; title: string; color?: string }>): Promise<number> {
+    const result = await prisma.schedule.createMany({
+      data: schedules.map((schedule) => ({
+        userId,
+        startDate: schedule.startDate,
+        endDate: schedule.endDate,
+        title: schedule.title,
+        color: schedule.color,
+      })),
+    });
+    return result.count;
+  }
+
   async findById(id: string): Promise<Schedule | null> {
     const schedule = await prisma.schedule.findUnique({ where: { id } });
     if (!schedule) return null;
