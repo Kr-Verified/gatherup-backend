@@ -24,6 +24,17 @@ function resolveCorsOrigin(origin: string): string | undefined {
   return undefined;
 }
 
+function applyCorsHeaders(c: any): void {
+  const origin = c.req.header('Origin');
+  const allowedOrigin = origin ? resolveCorsOrigin(origin) : undefined;
+  if (allowedOrigin) {
+    c.header('Access-Control-Allow-Origin', allowedOrigin);
+    c.header('Vary', 'Origin');
+  }
+  c.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+  c.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+}
+
 function isAllowedOrigin(origin: string | undefined): boolean {
   if (!origin) return true;
   return allowedOrigins.includes(origin);
@@ -62,7 +73,9 @@ function rateLimit(limit: number, windowMs: number) {
 // Middleware
 app.use('*', logger());
 app.use('*', async (c, next) => {
+  applyCorsHeaders(c);
   await next();
+  applyCorsHeaders(c);
   c.header('X-Content-Type-Options', 'nosniff');
   c.header('X-Frame-Options', 'DENY');
   c.header('Referrer-Policy', 'strict-origin-when-cross-origin');
@@ -90,6 +103,14 @@ app.use('*', async (c, next) => {
   }
 
   await next();
+});
+
+app.onError((error, c) => {
+  applyCorsHeaders(c);
+  c.header('X-Content-Type-Options', 'nosniff');
+  c.header('X-Frame-Options', 'DENY');
+  c.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+  return c.json({ error: '서버 오류가 발생했습니다.' }, 500);
 });
 
 // Dependency Injection

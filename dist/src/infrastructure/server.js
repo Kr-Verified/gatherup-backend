@@ -27,6 +27,16 @@ function resolveCorsOrigin(origin) {
         return origin;
     return undefined;
 }
+function applyCorsHeaders(c) {
+    const origin = c.req.header('Origin');
+    const allowedOrigin = origin ? resolveCorsOrigin(origin) : undefined;
+    if (allowedOrigin) {
+        c.header('Access-Control-Allow-Origin', allowedOrigin);
+        c.header('Vary', 'Origin');
+    }
+    c.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    c.header('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+}
 function isAllowedOrigin(origin) {
     if (!origin)
         return true;
@@ -57,7 +67,9 @@ function rateLimit(limit, windowMs) {
 // Middleware
 app.use('*', (0, logger_1.logger)());
 app.use('*', async (c, next) => {
+    applyCorsHeaders(c);
     await next();
+    applyCorsHeaders(c);
     c.header('X-Content-Type-Options', 'nosniff');
     c.header('X-Frame-Options', 'DENY');
     c.header('Referrer-Policy', 'strict-origin-when-cross-origin');
@@ -80,6 +92,13 @@ app.use('*', async (c, next) => {
         }
     }
     await next();
+});
+app.onError((error, c) => {
+    applyCorsHeaders(c);
+    c.header('X-Content-Type-Options', 'nosniff');
+    c.header('X-Frame-Options', 'DENY');
+    c.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+    return c.json({ error: '서버 오류가 발생했습니다.' }, 500);
 });
 // Dependency Injection
 const userRepo = new PrismaUserRepository_1.PrismaUserRepository();
