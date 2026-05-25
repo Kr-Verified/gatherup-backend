@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ScheduleUseCase = void 0;
+const validation_1 = require("../validation");
 class ScheduleUseCase {
     scheduleRepo;
     constructor(scheduleRepo) {
@@ -10,7 +11,8 @@ class ScheduleUseCase {
         if (startDate > endDate) {
             throw new Error('시작일이 종료일보다 늦을 수 없습니다.');
         }
-        return this.scheduleRepo.create(userId, startDate, endDate, title, color);
+        const safeColor = color ? (0, validation_1.validateHexColor)(color) : undefined;
+        return this.scheduleRepo.create(userId, startDate, endDate, (0, validation_1.cleanText)(title, '일정 제목', 80), safeColor);
     }
     async getMySchedules(userId) {
         return this.scheduleRepo.findByUserId(userId);
@@ -23,7 +25,12 @@ class ScheduleUseCase {
         if (schedule.userId !== userId) {
             throw new Error('본인의 일정만 수정할 수 있습니다.');
         }
-        return this.scheduleRepo.update(id, data);
+        const nextData = { ...data };
+        if (nextData.title !== undefined)
+            nextData.title = (0, validation_1.cleanText)(nextData.title, '일정 제목', 80);
+        if (nextData.color !== undefined)
+            nextData.color = (0, validation_1.validateHexColor)(nextData.color);
+        return this.scheduleRepo.update(id, nextData);
     }
     async deleteSchedule(id, userId) {
         const schedule = await this.scheduleRepo.findById(id);

@@ -2,6 +2,7 @@ import { Room } from '../../domain/Room';
 import { RoomMember } from '../../domain/RoomMember';
 import { RoomRepository } from '../../interface/repositories/RoomRepository';
 import { ScheduleRepository } from '../../interface/repositories/ScheduleRepository';
+import { cleanText, validateHexColor, validateTheme } from '../validation';
 import * as bcrypt from 'bcryptjs';
 
 export interface DateAvailability {
@@ -20,8 +21,9 @@ export class RoomUseCase {
 
   async createRoom(name: string, password: string | null, creatorId: string): Promise<Room> {
     const inviteCode = this.generateInviteCode();
-    const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
-    const room = await this.roomRepo.create(name, hashedPassword, inviteCode, creatorId);
+    const safePassword = password ? cleanText(password, '방 비밀번호', 128) : null;
+    const hashedPassword = safePassword ? await bcrypt.hash(safePassword, 10) : null;
+    const room = await this.roomRepo.create(cleanText(name, '방 이름', 50), hashedPassword, inviteCode, creatorId);
     // Creator automatically joins the room
     await this.roomRepo.addMember(room.id, creatorId);
     return room;
@@ -92,11 +94,10 @@ export class RoomUseCase {
 
     const nextData: Partial<{ name: string; nameColor: string; theme: string }> = {};
     if (data.name !== undefined) {
-      if (!data.name.trim()) throw new Error('방 이름을 입력해주세요.');
-      nextData.name = data.name.trim();
+      nextData.name = cleanText(data.name, '방 이름', 50);
     }
-    if (data.nameColor !== undefined) nextData.nameColor = data.nameColor;
-    if (data.theme !== undefined) nextData.theme = data.theme;
+    if (data.nameColor !== undefined) nextData.nameColor = validateHexColor(data.nameColor);
+    if (data.theme !== undefined) nextData.theme = validateTheme(data.theme);
 
     return this.roomRepo.updateSettings(roomId, nextData);
   }

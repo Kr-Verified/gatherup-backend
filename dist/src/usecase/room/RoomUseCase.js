@@ -34,6 +34,7 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RoomUseCase = void 0;
+const validation_1 = require("../validation");
 const bcrypt = __importStar(require("bcryptjs"));
 class RoomUseCase {
     roomRepo;
@@ -44,8 +45,9 @@ class RoomUseCase {
     }
     async createRoom(name, password, creatorId) {
         const inviteCode = this.generateInviteCode();
-        const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
-        const room = await this.roomRepo.create(name, hashedPassword, inviteCode, creatorId);
+        const safePassword = password ? (0, validation_1.cleanText)(password, '방 비밀번호', 128) : null;
+        const hashedPassword = safePassword ? await bcrypt.hash(safePassword, 10) : null;
+        const room = await this.roomRepo.create((0, validation_1.cleanText)(name, '방 이름', 50), hashedPassword, inviteCode, creatorId);
         // Creator automatically joins the room
         await this.roomRepo.addMember(room.id, creatorId);
         return room;
@@ -105,14 +107,12 @@ class RoomUseCase {
         }
         const nextData = {};
         if (data.name !== undefined) {
-            if (!data.name.trim())
-                throw new Error('방 이름을 입력해주세요.');
-            nextData.name = data.name.trim();
+            nextData.name = (0, validation_1.cleanText)(data.name, '방 이름', 50);
         }
         if (data.nameColor !== undefined)
-            nextData.nameColor = data.nameColor;
+            nextData.nameColor = (0, validation_1.validateHexColor)(data.nameColor);
         if (data.theme !== undefined)
-            nextData.theme = data.theme;
+            nextData.theme = (0, validation_1.validateTheme)(data.theme);
         return this.roomRepo.updateSettings(roomId, nextData);
     }
     async getAvailableDates(roomId, startDate, endDate) {

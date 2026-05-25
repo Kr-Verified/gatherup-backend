@@ -24,6 +24,11 @@ function resolveCorsOrigin(origin: string): string | undefined {
   return undefined;
 }
 
+function isAllowedOrigin(origin: string | undefined): boolean {
+  if (!origin) return true;
+  return allowedOrigins.includes(origin);
+}
+
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
 
 function getClientIp(c: any): string {
@@ -72,6 +77,20 @@ app.use(
     allowHeaders: ['Content-Type', 'Authorization'],
   })
 );
+app.use('*', async (c, next) => {
+  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(c.req.method)) {
+    if (!isAllowedOrigin(c.req.header('Origin'))) {
+      return c.json({ error: '허용되지 않은 요청 출처입니다.' }, 403);
+    }
+
+    const contentLength = Number(c.req.header('Content-Length') || 0);
+    if (contentLength > 1_100_000) {
+      return c.json({ error: '요청 본문이 너무 큽니다.' }, 413);
+    }
+  }
+
+  await next();
+});
 
 // Dependency Injection
 const userRepo = new PrismaUserRepository();

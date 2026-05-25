@@ -1,5 +1,6 @@
 import { Schedule } from '../../domain/Schedule';
 import { ScheduleRepository } from '../../interface/repositories/ScheduleRepository';
+import { cleanText, validateHexColor } from '../validation';
 
 export class ScheduleUseCase {
   constructor(private scheduleRepo: ScheduleRepository) {}
@@ -8,7 +9,8 @@ export class ScheduleUseCase {
     if (startDate > endDate) {
       throw new Error('시작일이 종료일보다 늦을 수 없습니다.');
     }
-    return this.scheduleRepo.create(userId, startDate, endDate, title, color);
+    const safeColor = color ? validateHexColor(color) : undefined;
+    return this.scheduleRepo.create(userId, startDate, endDate, cleanText(title, '일정 제목', 80), safeColor);
   }
 
   async getMySchedules(userId: string): Promise<Schedule[]> {
@@ -27,7 +29,10 @@ export class ScheduleUseCase {
     if (schedule.userId !== userId) {
       throw new Error('본인의 일정만 수정할 수 있습니다.');
     }
-    return this.scheduleRepo.update(id, data);
+    const nextData = { ...data };
+    if (nextData.title !== undefined) nextData.title = cleanText(nextData.title, '일정 제목', 80);
+    if (nextData.color !== undefined) nextData.color = validateHexColor(nextData.color);
+    return this.scheduleRepo.update(id, nextData);
   }
 
   async deleteSchedule(id: string, userId: string): Promise<void> {
