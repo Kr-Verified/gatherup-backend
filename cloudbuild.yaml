@@ -43,7 +43,7 @@ options:
 substitutions:
   _REGION: asia-northeast3
   _REPOSITORY: gatherup
-  _SERVICE: gatherup-backend
+  _SERVICE: gatherup
   _FRONTEND_ORIGIN: https://gatherupweb.netlify.app
   _DATABASE_URL_SECRET: gatherup-database-url
   _JWT_SECRET_SECRET: gatherup-jwt-secret
