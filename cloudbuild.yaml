@@ -34,6 +34,8 @@ steps:
       - DATABASE_URL=${_DATABASE_URL_SECRET}:latest,JWT_SECRET=${_JWT_SECRET_SECRET}:latest
 images:
   - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_SERVICE}:$COMMIT_SHA
+options:
+  logging: CLOUD_LOGGING_ONLY
 substitutions:
   _REGION: asia-northeast3
   _REPOSITORY: gatherup
