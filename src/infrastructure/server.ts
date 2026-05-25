@@ -72,6 +72,19 @@ app.get('/api/health/db', async (c) => {
   }
 });
 
+app.get('/api/health/users', async (c) => {
+  try {
+    const startedAt = Date.now();
+    const timeout = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Users table health check timed out.')), 4_000);
+    });
+    const count = await Promise.race([prisma.user.count(), timeout]);
+    return c.json({ ok: true, usersTable: 'connected', count, durationMs: Date.now() - startedAt });
+  } catch (error: any) {
+    return c.json({ ok: false, usersTable: 'failed', error: error.message }, 503);
+  }
+});
+
 app.get('/api/health/google', async (c) => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 3_000);
