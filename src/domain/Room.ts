@@ -5,6 +5,8 @@ export class Room {
     public inviteCode: string,
     public password: string | null,
     public createdAt: Date,
-    public creatorId: string
+    public creatorId: string,
+    public nameColor: string = '#a78bfa',
+    public theme: string = 'midnight'
   ) {}
 }

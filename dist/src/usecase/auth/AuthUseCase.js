@@ -75,6 +75,19 @@ class AuthUseCase {
     async getUser(id) {
         return this.userRepo.findById(id);
     }
+    async updateProfile(id, data) {
+        const nextData = {};
+        if (data.nickname !== undefined) {
+            if (!data.nickname.trim())
+                throw new Error('닉네임을 입력해주세요.');
+            nextData.nickname = data.nickname.trim();
+        }
+        if (data.profileImageUrl !== undefined)
+            nextData.profileImageUrl = data.profileImageUrl;
+        if (data.theme !== undefined)
+            nextData.theme = data.theme;
+        return this.userRepo.updateProfile(id, nextData);
+    }
     async deleteAccount(id) {
         await this.userRepo.deleteUser(id);
     }

@@ -8,6 +8,11 @@ export declare class AuthUseCase {
     login(loginId: string, password: string): Promise<User>;
     googleLogin(email: string, nickname: string): Promise<User>;
     getUser(id: string): Promise<User | null>;
+    updateProfile(id: string, data: Partial<{
+        nickname: string;
+        profileImageUrl: string | null;
+        theme: string;
+    }>): Promise<User>;
     deleteAccount(id: string): Promise<void>;
 }
 //# sourceMappingURL=AuthUseCase.d.ts.map

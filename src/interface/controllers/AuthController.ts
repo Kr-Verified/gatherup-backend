@@ -147,4 +147,22 @@ export class AuthController {
       return c.json({ error: error.message }, 500);
     }
   };
+
+  updateProfile = async (c: Context) => {
+    try {
+      const userId = getAuthenticatedUserId(c);
+      if (!userId) return c.json({ error: '사용자 ID가 필요합니다.' }, 401);
+
+      const body = await c.req.json();
+      const { nickname, profileImageUrl, theme } = body;
+      const user = await this.authUseCase.updateProfile(userId, {
+        nickname,
+        profileImageUrl,
+        theme,
+      });
+      return c.json(publicUser(user));
+    } catch (error: any) {
+      return c.json({ error: error.message }, 400);
+    }
+  };
 }

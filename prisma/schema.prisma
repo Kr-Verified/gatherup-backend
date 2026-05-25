@@ -16,6 +16,8 @@ model User {
   nickname  String
   age       Int?
   gender    String?
+  profileImageUrl String? @map("profile_image_url")
+  theme     String   @default("midnight")
   createdAt DateTime @default(now()) @map("created_at")
 
   rooms        RoomMember[]
@@ -30,6 +32,8 @@ model Room {
   name       String
   inviteCode String   @unique @map("invite_code")
   password   String?
+  nameColor  String   @default("#a78bfa") @map("name_color")
+  theme      String   @default("midnight")
   createdAt  DateTime @default(now()) @map("created_at")
   creatorId  String   @map("creator_id")
 

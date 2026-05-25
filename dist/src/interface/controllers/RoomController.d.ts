@@ -8,9 +8,11 @@ export declare class RoomController {
     }, 401, "json">) | (Response & import("hono").TypedResponse<{
         error: string;
     }, 400, "json">) | (Response & import("hono").TypedResponse<{
+        theme: string;
         id: string;
         createdAt: string;
         name: string;
+        nameColor: string;
         inviteCode: string;
         creatorId: string;
         hasPassword: boolean;
@@ -20,9 +22,11 @@ export declare class RoomController {
     joinRoom: (c: Context) => Promise<(Response & import("hono").TypedResponse<{
         error: string;
     }, 401, "json">) | (Response & import("hono").TypedResponse<{
+        theme: string;
         id: string;
         createdAt: string;
         name: string;
+        nameColor: string;
         inviteCode: string;
         creatorId: string;
         hasPassword: boolean;
@@ -32,9 +36,11 @@ export declare class RoomController {
     listMyRooms: (c: Context) => Promise<(Response & import("hono").TypedResponse<{
         error: string;
     }, 401, "json">) | (Response & import("hono").TypedResponse<{
+        theme: string;
         id: string;
         createdAt: string;
         name: string;
+        nameColor: string;
         inviteCode: string;
         creatorId: string;
         hasPassword: boolean;
@@ -45,9 +51,11 @@ export declare class RoomController {
         error: string;
     }, 401, "json">) | (Response & import("hono").TypedResponse<{
         room: {
+            theme: string;
             id: string;
             createdAt: string;
             name: string;
+            nameColor: string;
             inviteCode: string;
             creatorId: string;
             hasPassword: boolean;
@@ -59,15 +67,32 @@ export declare class RoomController {
             joinedAt: string;
             user: {
                 nickname: string;
+                profileImageUrl: string | null;
             };
         }[];
     }, import("hono/utils/http-status").ContentfulStatusCode, "json">) | (Response & import("hono").TypedResponse<{
         error: any;
     }, 403 | 404, "json">)>;
     updateRoomName: (c: Context) => Promise<(Response & import("hono").TypedResponse<{
+        theme: string;
         id: string;
         createdAt: string;
         name: string;
+        nameColor: string;
+        inviteCode: string;
+        creatorId: string;
+        hasPassword: boolean;
+    }, import("hono/utils/http-status").ContentfulStatusCode, "json">) | (Response & import("hono").TypedResponse<{
+        error: string;
+    }, 401, "json">) | (Response & import("hono").TypedResponse<{
+        error: any;
+    }, 400 | 403, "json">)>;
+    updateRoomSettings: (c: Context) => Promise<(Response & import("hono").TypedResponse<{
+        theme: string;
+        id: string;
+        createdAt: string;
+        name: string;
+        nameColor: string;
         inviteCode: string;
         creatorId: string;
         hasPassword: boolean;

@@ -45,6 +45,20 @@ export class AuthUseCase {
     return this.userRepo.findById(id);
   }
 
+  async updateProfile(
+    id: string,
+    data: Partial<{ nickname: string; profileImageUrl: string | null; theme: string }>
+  ): Promise<User> {
+    const nextData: Partial<{ nickname: string; profileImageUrl: string | null; theme: string }> = {};
+    if (data.nickname !== undefined) {
+      if (!data.nickname.trim()) throw new Error('닉네임을 입력해주세요.');
+      nextData.nickname = data.nickname.trim();
+    }
+    if (data.profileImageUrl !== undefined) nextData.profileImageUrl = data.profileImageUrl;
+    if (data.theme !== undefined) nextData.theme = data.theme;
+    return this.userRepo.updateProfile(id, nextData);
+  }
+
   async deleteAccount(id: string): Promise<void> {
     await this.userRepo.deleteUser(id);
   }

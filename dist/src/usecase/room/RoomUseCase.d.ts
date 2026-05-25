@@ -21,11 +21,17 @@ export declare class RoomUseCase {
         members: (RoomMember & {
             user: {
                 nickname: string;
+                profileImageUrl: string | null;
             };
         })[];
     }>;
     assertMember(roomId: string, userId: string): Promise<void>;
     updateRoomName(roomId: string, name: string, userId: string): Promise<Room>;
+    updateRoomSettings(roomId: string, data: Partial<{
+        name: string;
+        nameColor: string;
+        theme: string;
+    }>, userId: string): Promise<Room>;
     getAvailableDates(roomId: string, startDate: Date, endDate: Date): Promise<DateAvailability[]>;
     private generateInviteCode;
 }

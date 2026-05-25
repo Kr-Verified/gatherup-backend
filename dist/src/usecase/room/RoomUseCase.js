@@ -95,6 +95,26 @@ class RoomUseCase {
         }
         return this.roomRepo.updateName(roomId, name);
     }
+    async updateRoomSettings(roomId, data, userId) {
+        const room = await this.roomRepo.findById(roomId);
+        if (!room) {
+            throw new Error('방을 찾을 수 없습니다.');
+        }
+        if (room.creatorId !== userId) {
+            throw new Error('방장만 방 설정을 수정할 수 있습니다.');
+        }
+        const nextData = {};
+        if (data.name !== undefined) {
+            if (!data.name.trim())
+                throw new Error('방 이름을 입력해주세요.');
+            nextData.name = data.name.trim();
+        }
+        if (data.nameColor !== undefined)
+            nextData.nameColor = data.nameColor;
+        if (data.theme !== undefined)
+            nextData.theme = data.theme;
+        return this.roomRepo.updateSettings(roomId, nextData);
+    }
     async getAvailableDates(roomId, startDate, endDate) {
         const members = await this.roomRepo.getMembers(roomId);
         const userIds = members.map((m) => m.userId);

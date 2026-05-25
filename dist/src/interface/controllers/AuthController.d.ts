@@ -8,11 +8,13 @@ export declare class AuthController {
     private authResponse;
     register: (c: Context) => Promise<(Response & import("hono").TypedResponse<{
         user: {
+            nickname: string;
+            profileImageUrl?: string | null | undefined;
+            theme: string;
             id: string;
             loginId?: string | null | undefined;
             provider: string;
             email?: string | null | undefined;
-            nickname: string;
             age: number | null;
             gender: string | null;
             createdAt: string;
@@ -25,11 +27,13 @@ export declare class AuthController {
         error: string;
     }, 400, "json">) | (Response & import("hono").TypedResponse<{
         user: {
+            nickname: string;
+            profileImageUrl?: string | null | undefined;
+            theme: string;
             id: string;
             loginId?: string | null | undefined;
             provider: string;
             email?: string | null | undefined;
-            nickname: string;
             age: number | null;
             gender: string | null;
             createdAt: string;
@@ -47,11 +51,13 @@ export declare class AuthController {
     }, 500, "json">)>;
     googleLogin: (c: Context) => Promise<(Response & import("hono").TypedResponse<{
         user: {
+            nickname: string;
+            profileImageUrl?: string | null | undefined;
+            theme: string;
             id: string;
             loginId?: string | null | undefined;
             provider: string;
             email?: string | null | undefined;
-            nickname: string;
             age: number | null;
             gender: string | null;
             createdAt: string;
@@ -76,16 +82,34 @@ export declare class AuthController {
     }, 401, "json">) | (Response & import("hono").TypedResponse<{
         error: string;
     }, 404, "json">) | (Response & import("hono").TypedResponse<{
+        nickname: string;
+        profileImageUrl?: string | null | undefined;
+        theme: string;
         id: string;
         loginId?: string | null | undefined;
         provider: string;
         email?: string | null | undefined;
-        nickname: string;
         age: number | null;
         gender: string | null;
         createdAt: string;
     }, import("hono/utils/http-status").ContentfulStatusCode, "json">) | (Response & import("hono").TypedResponse<{
         error: any;
     }, 500, "json">)>;
+    updateProfile: (c: Context) => Promise<(Response & import("hono").TypedResponse<{
+        nickname: string;
+        profileImageUrl?: string | null | undefined;
+        theme: string;
+        id: string;
+        loginId?: string | null | undefined;
+        provider: string;
+        email?: string | null | undefined;
+        age: number | null;
+        gender: string | null;
+        createdAt: string;
+    }, import("hono/utils/http-status").ContentfulStatusCode, "json">) | (Response & import("hono").TypedResponse<{
+        error: string;
+    }, 401, "json">) | (Response & import("hono").TypedResponse<{
+        error: any;
+    }, 400, "json">)>;
 }
 //# sourceMappingURL=AuthController.d.ts.map

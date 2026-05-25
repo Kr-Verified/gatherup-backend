@@ -12,19 +12,19 @@ class PrismaRoomRepository {
         const room = await prisma_1.default.room.create({
             data: { name, password, inviteCode, creatorId },
         });
-        return new Room_1.Room(room.id, room.name, room.inviteCode, room.password, room.createdAt, room.creatorId);
+        return this.toDomain(room);
     }
     async findById(id) {
         const room = await prisma_1.default.room.findUnique({ where: { id } });
         if (!room)
             return null;
-        return new Room_1.Room(room.id, room.name, room.inviteCode, room.password, room.createdAt, room.creatorId);
+        return this.toDomain(room);
     }
     async findByInviteCode(inviteCode) {
         const room = await prisma_1.default.room.findUnique({ where: { inviteCode } });
         if (!room)
             return null;
-        return new Room_1.Room(room.id, room.name, room.inviteCode, room.password, room.createdAt, room.creatorId);
+        return this.toDomain(room);
     }
     async addMember(roomId, userId) {
         const member = await prisma_1.default.roomMember.create({
@@ -35,11 +35,11 @@ class PrismaRoomRepository {
     async getMembers(roomId) {
         const members = await prisma_1.default.roomMember.findMany({
             where: { roomId },
-            include: { user: { select: { nickname: true } } },
+            include: { user: { select: { nickname: true, profileImageUrl: true } } },
         });
         return members.map((m) => ({
             ...new RoomMember_1.RoomMember(m.id, m.roomId, m.userId, m.joinedAt),
-            user: { nickname: m.user.nickname },
+            user: { nickname: m.user.nickname, profileImageUrl: m.user.profileImageUrl },
         }));
     }
     async getRoomsByUserId(userId) {
@@ -47,7 +47,7 @@ class PrismaRoomRepository {
             where: { userId },
             include: { room: true },
         });
-        return memberships.map((m) => new Room_1.Room(m.room.id, m.room.name, m.room.inviteCode, m.room.password, m.room.createdAt, m.room.creatorId));
+        return memberships.map((m) => this.toDomain(m.room));
     }
     async isMember(roomId, userId) {
         const member = await prisma_1.default.roomMember.findUnique({
@@ -60,7 +60,17 @@ class PrismaRoomRepository {
             where: { id: roomId },
             data: { name },
         });
-        return new Room_1.Room(room.id, room.name, room.inviteCode, room.password, room.createdAt, room.creatorId);
+        return this.toDomain(room);
+    }
+    async updateSettings(roomId, data) {
+        const room = await prisma_1.default.room.update({
+            where: { id: roomId },
+            data,
+        });
+        return this.toDomain(room);
+    }
+    toDomain(room) {
+        return new Room_1.Room(room.id, room.name, room.inviteCode, room.password, room.createdAt, room.creatorId, room.nameColor, room.theme);
     }
 }
 exports.PrismaRoomRepository = PrismaRoomRepository;

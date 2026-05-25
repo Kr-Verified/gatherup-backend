@@ -110,6 +110,7 @@ app.post('/api/auth/login', authController.login);
 app.get('/api/auth/check-id', authController.checkDuplicateId);
 app.post('/api/auth/google', authController.googleLogin);
 app.get('/api/user/me', authController.getMe);
+app.put('/api/user/me', authController.updateProfile);
 app.delete('/api/user/delete', authController.deleteAccount);
 // Room routes
 app.post('/api/rooms', roomController.createRoom);
@@ -117,6 +118,7 @@ app.post('/api/rooms/join', roomController.joinRoom);
 app.get('/api/rooms', roomController.listMyRooms);
 app.get('/api/rooms/:id', roomController.getRoomDetail);
 app.put('/api/rooms/:id', roomController.updateRoomName);
+app.put('/api/rooms/:id/settings', roomController.updateRoomSettings);
 app.get('/api/rooms/:id/available-dates', roomController.getAvailableDates);
 // Schedule routes
 app.get('/api/schedules', scheduleController.listSchedules);

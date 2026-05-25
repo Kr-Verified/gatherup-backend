@@ -11,7 +11,9 @@ class User {
     password;
     provider;
     email;
-    constructor(id, nickname, age, gender, createdAt, loginId, password, provider = 'local', email) {
+    profileImageUrl;
+    theme;
+    constructor(id, nickname, age, gender, createdAt, loginId, password, provider = 'local', email, profileImageUrl, theme = 'midnight') {
         this.id = id;
         this.nickname = nickname;
         this.age = age;
@@ -21,6 +23,8 @@ class User {
         this.password = password;
         this.provider = provider;
         this.email = email;
+        this.profileImageUrl = profileImageUrl;
+        this.theme = theme;
     }
 }
 exports.User = User;

@@ -9,10 +9,17 @@ export declare class PrismaRoomRepository implements RoomRepository {
     getMembers(roomId: string): Promise<(RoomMember & {
         user: {
             nickname: string;
+            profileImageUrl: string | null;
         };
     })[]>;
     getRoomsByUserId(userId: string): Promise<Room[]>;
     isMember(roomId: string, userId: string): Promise<boolean>;
     updateName(roomId: string, name: string): Promise<Room>;
+    updateSettings(roomId: string, data: Partial<{
+        name: string;
+        nameColor: string;
+        theme: string;
+    }>): Promise<Room>;
+    private toDomain;
 }
 //# sourceMappingURL=PrismaRoomRepository.d.ts.map

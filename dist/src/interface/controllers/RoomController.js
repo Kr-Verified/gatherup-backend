@@ -88,6 +88,22 @@ class RoomController {
             return c.json({ error: error.message }, status);
         }
     };
+    updateRoomSettings = async (c) => {
+        try {
+            const userId = (0, auth_1.getAuthenticatedUserId)(c);
+            if (!userId)
+                return c.json({ error: '사용자 ID가 필요합니다.' }, 401);
+            const roomId = c.req.param('id');
+            const body = await c.req.json();
+            const { name, nameColor, theme } = body;
+            const room = await this.roomUseCase.updateRoomSettings(roomId, { name, nameColor, theme }, userId);
+            return c.json((0, auth_1.publicRoom)(room));
+        }
+        catch (error) {
+            const status = error.message.includes('방장') ? 403 : 400;
+            return c.json({ error: error.message }, status);
+        }
+    };
     getAvailableDates = async (c) => {
         try {
             const roomId = c.req.param('id');

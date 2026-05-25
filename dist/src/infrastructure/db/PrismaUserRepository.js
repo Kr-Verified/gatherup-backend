@@ -19,30 +19,40 @@ class PrismaUserRepository {
                 email: email ?? null
             },
         });
-        return new User_1.User(user.id, user.nickname, user.age, user.gender, user.createdAt, user.loginId, user.password, user.provider, user.email);
+        return this.toDomain(user);
     }
     async findById(id) {
         const user = await prisma_1.default.user.findUnique({ where: { id } });
         if (!user)
             return null;
-        return new User_1.User(user.id, user.nickname, user.age, user.gender, user.createdAt, user.loginId, user.password, user.provider, user.email);
+        return this.toDomain(user);
     }
     async findByLoginId(loginId) {
         const user = await prisma_1.default.user.findUnique({ where: { loginId } });
         if (!user)
             return null;
-        return new User_1.User(user.id, user.nickname, user.age, user.gender, user.createdAt, user.loginId, user.password, user.provider, user.email);
+        return this.toDomain(user);
     }
     async findByEmail(email) {
         const user = await prisma_1.default.user.findUnique({ where: { email } });
         if (!user)
             return null;
-        return new User_1.User(user.id, user.nickname, user.age, user.gender, user.createdAt, user.loginId, user.password, user.provider, user.email);
+        return this.toDomain(user);
+    }
+    async updateProfile(id, data) {
+        const user = await prisma_1.default.user.update({
+            where: { id },
+            data,
+        });
+        return this.toDomain(user);
     }
     async deleteUser(id) {
         await prisma_1.default.schedule.deleteMany({ where: { userId: id } });
         await prisma_1.default.roomMember.deleteMany({ where: { userId: id } });
         await prisma_1.default.user.delete({ where: { id } });
+    }
+    toDomain(user) {
+        return new User_1.User(user.id, user.nickname, user.age, user.gender, user.createdAt, user.loginId, user.password, user.provider, user.email, user.profileImageUrl, user.theme);
     }
 }
 exports.PrismaUserRepository = PrismaUserRepository;

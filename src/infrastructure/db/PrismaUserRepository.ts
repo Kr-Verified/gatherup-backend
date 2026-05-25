@@ -15,30 +15,66 @@ export class PrismaUserRepository implements UserRepository {
         email: email ?? null
       },
     });
-    return new User(user.id, user.nickname, user.age, user.gender, user.createdAt, user.loginId, user.password, user.provider, user.email);
+    return this.toDomain(user);
   }
 
   async findById(id: string): Promise<User | null> {
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user) return null;
-    return new User(user.id, user.nickname, user.age, user.gender, user.createdAt, user.loginId, user.password, user.provider, user.email);
+    return this.toDomain(user);
   }
 
   async findByLoginId(loginId: string): Promise<User | null> {
     const user = await prisma.user.findUnique({ where: { loginId } });
     if (!user) return null;
-    return new User(user.id, user.nickname, user.age, user.gender, user.createdAt, user.loginId, user.password, user.provider, user.email);
+    return this.toDomain(user);
   }
 
   async findByEmail(email: string): Promise<User | null> {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return null;
-    return new User(user.id, user.nickname, user.age, user.gender, user.createdAt, user.loginId, user.password, user.provider, user.email);
+    return this.toDomain(user);
+  }
+
+  async updateProfile(id: string, data: Partial<{ nickname: string; profileImageUrl: string | null; theme: string }>): Promise<User> {
+    const user = await prisma.user.update({
+      where: { id },
+      data,
+    });
+    return this.toDomain(user);
   }
 
   async deleteUser(id: string): Promise<void> {
     await prisma.schedule.deleteMany({ where: { userId: id } });
     await prisma.roomMember.deleteMany({ where: { userId: id } });
     await prisma.user.delete({ where: { id } });
+  }
+
+  private toDomain(user: {
+    id: string;
+    nickname: string;
+    age: number | null;
+    gender: string | null;
+    createdAt: Date;
+    loginId: string | null;
+    password: string | null;
+    provider: string;
+    email: string | null;
+    profileImageUrl: string | null;
+    theme: string;
+  }): User {
+    return new User(
+      user.id,
+      user.nickname,
+      user.age,
+      user.gender,
+      user.createdAt,
+      user.loginId,
+      user.password,
+      user.provider,
+      user.email,
+      user.profileImageUrl,
+      user.theme
+    );
   }
 }

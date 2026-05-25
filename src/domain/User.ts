@@ -8,6 +8,8 @@ export class User {
     public loginId?: string | null,
     public password?: string | null,
     public provider: string = 'local',
-    public email?: string | null
+    public email?: string | null,
+    public profileImageUrl?: string | null,
+    public theme: string = 'midnight'
   ) {}
 }
