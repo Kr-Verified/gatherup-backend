@@ -25,19 +25,40 @@ const allowedOrigins = [
 function resolveCorsOrigin(origin) {
     if (allowedOrigins.includes(origin))
         return origin;
-    try {
-        const { hostname, protocol } = new URL(origin);
-        if (protocol === 'https:' && hostname.endsWith('.netlify.app')) {
-            return origin;
-        }
-    }
-    catch {
-        return undefined;
-    }
     return undefined;
+}
+const rateLimitStore = new Map();
+function getClientIp(c) {
+    return (c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ||
+        c.req.header('x-real-ip') ||
+        'unknown');
+}
+function rateLimit(limit, windowMs) {
+    return async (c, next) => {
+        const key = `${getClientIp(c)}:${c.req.path}`;
+        const now = Date.now();
+        const current = rateLimitStore.get(key);
+        if (!current || current.resetAt <= now) {
+            rateLimitStore.set(key, { count: 1, resetAt: now + windowMs });
+            return next();
+        }
+        if (current.count >= limit) {
+            return c.json({ error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' }, 429);
+        }
+        current.count += 1;
+        return next();
+    };
 }
 // Middleware
 app.use('*', (0, logger_1.logger)());
+app.use('*', async (c, next) => {
+    await next();
+    c.header('X-Content-Type-Options', 'nosniff');
+    c.header('X-Frame-Options', 'DENY');
+    c.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+    c.header('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    c.header('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'");
+});
 app.use('*', (0, cors_1.cors)({
     origin: resolveCorsOrigin,
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -106,9 +127,9 @@ app.get('/api/health/google', async (c) => {
 });
 // Auth routes
 app.post('/api/auth/register', authController.register);
-app.post('/api/auth/login', authController.login);
+app.post('/api/auth/login', rateLimit(8, 60_000), authController.login);
 app.get('/api/auth/check-id', authController.checkDuplicateId);
-app.post('/api/auth/google', authController.googleLogin);
+app.post('/api/auth/google', rateLimit(12, 60_000), authController.googleLogin);
 app.get('/api/user/me', authController.getMe);
 app.put('/api/user/me', authController.updateProfile);
 app.delete('/api/user/delete', authController.deleteAccount);
